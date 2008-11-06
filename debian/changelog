@@ -1,0 +1,6 @@
+sp-dbus-test-pingpong (0.1) unstable; urgency=low
+
+  * Initial Release.
+  * Fixes: NB#91101
+
+ -- Eero Tamminen <eero.tamminen@nokia.com>  Tue,  4 Nov 2008 17:13:49 +0200

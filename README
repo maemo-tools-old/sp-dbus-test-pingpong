@@ -1,0 +1,275 @@
+I used the following test pattern (server and client):
+   run-standalone.sh ./dpong
+   run-standalone.sh ./dping
+
+Here are build w40/F4 test results.
+
+Enough memory and idle system:
+   MESSAGES recv 100 lost 0 LATENCY min 1525 avg 1564 max 2014
+   MESSAGES recv 100 lost 0 LATENCY min 1525 avg 1555 max 1770
+   MESSAGES recv 100 lost 0 LATENCY min 1525 avg 1562 max 1861
+   MESSAGES recv 100 lost 0 LATENCY min 1525 avg 1566 max 1830
+   MESSAGES recv 100 lost 0 LATENCY min 1525 avg 1563 max 1861
+   MESSAGES recv 100 lost 0 LATENCY min 1525 avg 1562 max 1801
+   MESSAGES recv 100 lost 0 LATENCY min 1525 avg 1560 max 1862
+   MESSAGES recv 100 lost 0 LATENCY min 1525 avg 1561 max 1831
+   MESSAGES recv 100 lost 0 LATENCY min 1525 avg 1563 max 1800
+Thus we have 1.6 ms an average message latency and 1.8 ms for maximal
+
+Moment of Browser start
+   MESSAGES recv 100 lost 0 LATENCY min 1525 avg 2314 max 67018
+   MESSAGES recv 100 lost 0 LATENCY min 1525 avg 8702 max 686065
+   MESSAGES recv 100 lost 0 LATENCY min 1525 avg 6736 max 410125
+   MESSAGES recv 100 lost 0 LATENCY min 1525 avg 13454 max 1151489
+   MESSAGES recv 100 lost 0 LATENCY min 1586 avg 16958 max 668946
+   MESSAGES recv 100 lost 0 LATENCY min 2564 avg 15920 max 257050
+Here are 16 ms an average message latency and up to 1151 ms for maximal
+
+Restarting dpong with reporting 1000 messages because 100 messages are too often.
+   Nokia770-41:~# run-standalone.sh ./dpong 1000
+   ping server
+   reporting period is set to 1000 messages
+   ping server is ready to accept calls
+   MESSAGES recv 931 lost 64068 LATENCY min 1586 avg 1736 max 20722
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1688 max 44403
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1629 max 3509
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 2385 max 161102
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 4758 max 46326
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1634 max 3480
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 2684 max 87311
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1634 max 4272
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 2367 max 131012
+
+Now, high memory consumption, attempt to Browser switch:
+   MESSAGES recv 1000 lost 0 LATENCY min 4608 avg 19670 max 478089
+   MESSAGES recv 1000 lost 0 LATENCY min 2899 avg 19219 max 332123
+   MESSAGES recv 1000 lost 0 LATENCY min 4548 avg 22953 max 728118
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1890 max 39947
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1723 max 44342
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1736 max 14130
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1690 max 3449
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1723 max 44373
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 7859 max 329132
+We have 8.7 ms an average latency and up to 72 ms maximal
+
+High memory usage, idle device
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 4959 max 146392
+   MESSAGES recv 1000 lost 0 LATENCY min 1556 avg 3083 max 186768
+   MESSAGES recv 1000 lost 0 LATENCY min 1556 avg 1633 max 3601
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1676 max 45013
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1632 max 3601
+   MESSAGES recv 1000 lost 0 LATENCY min 1556 avg 1629 max 3417
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1630 max 3387
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1632 max 3632
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1682 max 14343
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1629 max 3570
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1635 max 3449
+   MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1631 max 2990
+Average latency higher that usually but maximal is unpredicable up to 45 ms.
+
+After closing dpong server (just dping only) board is rebooted after about 1 minute.
+
+
+
+Extra experiments with priorities:
+   Use case
+   run-standalone.sh dpong &
+   run-standalone.sh dping & ls -R / > /dev/null
+
+   original session server
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 2491 max 79834
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 1656 max 6133
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 2462 max 79926
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 1653 max 6257
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 1650 max 6287
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 1650 max 6317
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 1656 max 6286
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 1739 max 6286
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 1647 max 6226
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 1648 max 6257
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 3858 max 220398
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 2261 max 59356
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 2480 max 79803
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 1598 max 1954
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 2427 max 79865
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 1684 max 6164
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 1599 max 1770
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 1643 max 6134
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 2344 max 13031
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 9528 max 711976
+      MESSAGES recv 100 lost 0 LATENCY min 1556 avg 2573 max 52551
+      MESSAGES recv 100 lost 0 LATENCY min 2350 avg 5217 max 266877
+      MESSAGES recv 100 lost 0 LATENCY min 2349 avg 2674 max 7781
+   maximal registered latency is 712 ms -> problems in message routing & consumption
+
+   nice -10 dbus session server
+      MESSAGES recv 100 lost 0 LATENCY min 2197 avg 10088 max 757661
+      MESSAGES recv 100 lost 0 LATENCY min 2227 avg 2463 max 6928
+      MESSAGES recv 100 lost 0 LATENCY min 2228 avg 2433 max 6470
+      MESSAGES recv 100 lost 0 LATENCY min 2228 avg 2921 max 50416
+      MESSAGES recv 100 lost 0 LATENCY min 2227 avg 2418 max 7171
+      MESSAGES recv 100 lost 0 LATENCY min 2228 avg 2507 max 7141
+      MESSAGES recv 100 lost 0 LATENCY min 2227 avg 2403 max 6989
+      MESSAGES recv 100 lost 0 LATENCY min 2228 avg 2418 max 7141
+      MESSAGES recv 100 lost 0 LATENCY min 2228 avg 2841 max 28900
+      MESSAGES recv 100 lost 0 LATENCY min 2228 avg 2601 max 6989
+      MESSAGES recv 100 lost 0 LATENCY min 2228 avg 2506 max 7722
+      MESSAGES recv 100 lost 0 LATENCY min 2228 avg 2449 max 6988
+      MESSAGES recv 100 lost 0 LATENCY min 2227 avg 2600 max 17976
+      MESSAGES recv 100 lost 0 LATENCY min 2227 avg 2773 max 31555
+      MESSAGES recv 100 lost 0 LATENCY min 2227 avg 2570 max 12085
+      MESSAGES recv 100 lost 0 LATENCY min 2228 avg 2472 max 6989
+      MESSAGES recv 100 lost 0 LATENCY min 2228 avg 2397 max 6745
+      MESSAGES recv 100 lost 0 LATENCY min 2227 avg 2904 max 45013
+      MESSAGES recv 100 lost 0 LATENCY min 2227 avg 2574 max 6745
+      MESSAGES recv 100 lost 0 LATENCY min 2228 avg 2678 max 6927
+      MESSAGES recv 100 lost 0 LATENCY min 2228 avg 3117 max 12756
+   maximal registered latency is 758 ms -> problem in message consumption
+
+   nice -10 dbus session server + nice -10 for dpong
+      MESSAGES recv 100 lost 0 LATENCY min 1191 avg 1332 max 1495
+      MESSAGES recv 100 lost 0 LATENCY min 1191 avg 1335 max 1526
+      MESSAGES recv 100 lost 0 LATENCY min 1252 avg 1378 max 4791
+      MESSAGES recv 100 lost 0 LATENCY min 1312 avg 1349 max 1983
+      MESSAGES recv 100 lost 0 LATENCY min 1252 avg 1335 max 1526
+      MESSAGES recv 100 lost 0 LATENCY min 1251 avg 1338 max 1708
+      MESSAGES recv 100 lost 0 LATENCY min 1251 avg 1340 max 1891
+      MESSAGES recv 100 lost 0 LATENCY min 1251 avg 1339 max 1678
+      MESSAGES recv 100 lost 0 LATENCY min 1220 avg 1377 max 4883
+      MESSAGES recv 100 lost 0 LATENCY min 1220 avg 1334 max 1801
+      MESSAGES recv 100 lost 0 LATENCY min 1251 avg 1334 max 1496
+      MESSAGES recv 100 lost 0 LATENCY min 1312 avg 1337 max 1953
+      MESSAGES recv 100 lost 0 LATENCY min 1251 avg 1330 max 1527
+      MESSAGES recv 100 lost 0 LATENCY min 1312 avg 3037 max 16632
+      MESSAGES recv 100 lost 0 LATENCY min 2075 avg 2374 max 3785
+      MESSAGES recv 100 lost 0 LATENCY min 1191 avg 2115 max 79803
+      MESSAGES recv 100 lost 0 LATENCY min 1251 avg 2160 max 79711
+      MESSAGES recv 100 lost 0 LATENCY min 1220 avg 1349 max 2289
+      MESSAGES recv 100 lost 0 LATENCY min 1281 avg 2214 max 45593
+      MESSAGES recv 100 lost 0 LATENCY min 1221 avg 1335 max 1770
+      MESSAGES recv 100 lost 0 LATENCY min 1190 avg 1352 max 2747
+      MESSAGES recv 100 lost 0 LATENCY min 1220 avg 1364 max 4761
+      MESSAGES recv 100 lost 0 LATENCY min 1190 avg 1347 max 2319
+      MESSAGES recv 100 lost 0 LATENCY min 1252 avg 1337 max 1740
+   maximal registered latency is 80 ms -> situation looks much better!
+
+   Last experiment top report:
+      Mem: 60324K used, 1512K free, 0K shrd, 240K buff, 21684K cached
+      Load average: 2.24, 1.48, 0.74    (State: S=sleeping R=running, W=waiting)
+
+      PID USER     STATUS   RSS  PPID %CPU %MEM COMMAND
+      761 user     S <     1012   268 44.7  1.6 dbus-daemon-1
+      775 root     S <      940   770 29.9  1.5 dpong
+      782 root     R        800   776 22.0  1.2 dping
+      805 root     R        752   803  1.5  1.2 top
+      801 root     S       1772   459  0.9  2.8 sshd
+      275 root     S        364   268  0.7  0.5 bme
+      680 user     S <     8116   268  0.0 13.1 maemo_af_deskto
+      691 user     S       6936   268  0.0 11.2 hildon-input-me
+      620 systemui S <     5472   268  0.0  8.8 systemui
+      644 user     S <     5120     1  0.0  8.2 maemo-launcher
+      762 user     S <     4736   268  0.0  7.6 osso-media-serv
+      684 user     S <     4096   268  0.0  6.6 osso-connectivi
+      462 root     S <     2904   268  0.0  4.6 Xomap
+      506 user     S <     2668   268  0.0  4.3 sapwood-server
+      764 user     S       2208     1  0.0  3.5 dbus-vfs-daemon
+      765 user     S       2208   764  0.0  3.5 dbus-vfs-daemon
+      766 user     S       2208   765  0.0  3.5 dbus-vfs-daemon
+      510 user     S <     2136   268  0.0  3.4 matchbox-window
+      741 root     S       1740     1  0.0  2.8 osso_alarm
+      599 messageb S <     1448   268  0.0  2.3 gconfd-2
+      451 messageb S <     1420   268  0.0  2.2 dbus-daemon-1
+      624 root     S <     1412   268  0.0  2.2 btcond
+      591 root     S <     1360   268  0.0  2.1 mce
+
+   Last experiment status report:
+   Nokia770-41:~# cat /proc/761/status
+      Name:   dbus-daemon-1
+      State:  S (sleeping)
+      SleepAVG:       98%
+      Tgid:   761
+      Pid:    761
+      PPid:   268
+      TracerPid:      0
+      Uid:    29999   29999   29999   29999
+      Gid:    29999   29999   29999   29999
+      FDSize: 32
+      Groups: 20 29999
+      VmSize:     2100 kB
+      VmLck:         0 kB
+      VmRSS:      1012 kB
+      VmData:      156 kB
+      VmStk:        84 kB
+      VmExe:       228 kB
+      VmLib:      1440 kB
+      VmPTE:         6 kB
+      Threads:        1
+      SigQ:   0/512
+      SigPnd: 0000000000000000
+      ShdPnd: 0000000000000000
+      SigBlk: 0000000080000000
+      SigIgn: 0000000000381000
+      SigCgt: 0000000000004001
+      CapInh: 0000000000000000
+      CapPrm: 0000000000000000
+      CapEff: 0000000000000000
+   Nokia770-41:~# cat /proc/775/status
+      Name:   dpong
+      State:  S (sleeping)
+      SleepAVG:       98%
+      Tgid:   775
+      Pid:    775
+      PPid:   770
+      TracerPid:      0
+      Uid:    0       0       0       0
+      Gid:    0       0       0       0
+      FDSize: 32
+      Groups: 0
+      VmSize:     3196 kB
+      VmLck:         0 kB
+      VmRSS:       940 kB
+      VmData:      472 kB
+      VmStk:        84 kB
+      VmExe:         8 kB
+      VmLib:      2308 kB
+      VmPTE:         8 kB
+      Threads:        1
+      SigQ:   22/512
+      SigPnd: 0000000000000000
+      ShdPnd: 0000000000000000
+      SigBlk: 0000000080000000
+      SigIgn: 0000000000001000
+      SigCgt: 0000000380000000
+      CapInh: 0000000000000000
+      CapPrm: 00000000fffffeff
+      CapEff: 00000000fffffeff
+   Nokia770-41:~# cat /proc/782/status
+      Name:   dping
+      State:  R (running)
+      SleepAVG:       0%
+      Tgid:   782
+      Pid:    782
+      PPid:   776
+      TracerPid:      0
+      Uid:    0       0       0       0
+      Gid:    0       0       0       0
+      FDSize: 32
+      Groups: 0
+      VmSize:     3188 kB
+      VmLck:         0 kB
+      VmRSS:       800 kB
+      VmData:      468 kB
+      VmStk:        84 kB
+      VmExe:         4 kB
+      VmLib:      2308 kB
+      VmPTE:         8 kB
+      Threads:        1
+      SigQ:   22/512
+      SigPnd: 0000000000000000
+      ShdPnd: 0000000000000000
+      SigBlk: 0000000080000000
+      SigIgn: 0000000000001000
+      SigCgt: 0000000380000000
+      CapInh: 0000000000000000
+      CapPrm: 00000000fffffeff
+      CapEff: 00000000fffffeff

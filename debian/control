@@ -1,0 +1,15 @@
+Source: sp-dbus-test-pingpong
+Section: devel
+Priority: extra
+Maintainer: Eero Tamminen <eero.tamminen@nokia.com>
+Build-Depends: debhelper (>= 5), libdbus-glib-1-dev, libdbus-1-dev
+Standards-Version: 3.7.2
+
+Package: sp-dbus-test-pingpong
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: A minimal client/server for testing D-Bus throughput/latency
+ A client/server pair for testing D-Bus throughput/latency by pushing
+ a continuous stream of messages and measuring the mininum/average/maximum
+ latency, as well as the amount of messages pushes in a given time.
+

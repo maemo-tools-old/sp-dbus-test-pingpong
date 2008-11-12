@@ -105,6 +105,7 @@ static DBusHandlerResult ping_object_message_handler_cb(DBusConnection* a_conn, 
             {
                fatal("NULL reply message in dpong.c");
             }
+            dbus_message_append_args(reply, DBUS_TYPE_UINT32, &counter, DBUS_TYPE_UINT32, &timestamp, DBUS_TYPE_INVALID);
             if (!dbus_connection_send(a_conn, reply, NULL))
             {
                fprintf(stderr, "sending the reply failed\n");

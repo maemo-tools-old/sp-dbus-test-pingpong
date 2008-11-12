@@ -95,60 +95,80 @@ static DBusHandlerResult ping_object_message_handler_cb(DBusConnection* a_conn, 
          const unsigned diff = get_time_us() - timestamp;
          SERVER* server = s_server;  /* Probably will be identified for each client */
 
-         if (server->min_time > diff)
-            server->min_time = diff;
-
-         if (server->max_time < diff)
-            server->max_time = diff;
-
-         server->tot_time += diff;
-
-         /* Check message losing */
-         if (counter == server->counter)
+         /* If we're measuring the roundtrip performance, then just reply
+            and be done with it */ 
+         if (!dbus_message_get_no_reply(a_message))
          {
-            server->recv++;
+            DBusMessage *reply;
+            reply = dbus_message_new_method_return(a_message);
+            if (NULL == reply)
+            {
+               fatal("NULL reply message in dpong.c");
+            }
+            if (!dbus_connection_send(a_conn, reply, NULL))
+            {
+               fprintf(stderr, "sending the reply failed\n");
+            }
+            dbus_message_unref(reply);
+            dbus_connection_flush(a_conn);
          }
          else
          {
-            /* Number of messages lost */
-            server->lost += (server->counter < counter ? counter - server->counter : server->report - server->counter);
-         }
 
-         /* Increase the index of message */
-         server->counter = counter + 1;
-
-         /* Reporting if it necessary */
-         if (0 == (server->counter % server->report))
-         {
-            fprintf (stdout, "Timestamp: %u microseconds\n", get_time_us());
-            fprintf (
-                  stdout, "MESSAGES recv %u lost %u LATENCY min %u avg %u max %u THOUGHPUT %.1f m/s\n",
-                  server->recv, server->lost,
-                  server->min_time, DIV(server->tot_time,server->recv), server->max_time, server->recv/((double)(get_time_us()-server->initial_ts)/1000000)
-               );
-
-            /* Setup values for new test cycle */
-            if (server->counter < server->report)
-            {
-               /* We lose some messages and receive the first one from the new cycle */
-               server->recv     = 1;
-               server->lost     = counter - 1;
+            if (server->min_time > diff)
                server->min_time = diff;
-               server->tot_time = diff;
+
+            if (server->max_time < diff)
                server->max_time = diff;
+
+            server->tot_time += diff;
+
+            /* Check message losing */
+            if (counter == server->counter)
+            {
+               server->recv++;
             }
             else
             {
-               /* Normal flow, all messages received */
-               server->recv     = 0;
-               server->lost     = 0;
-               server->min_time = (unsigned)(-1);
-               server->tot_time = 0;
-               server->max_time = 0;
-               server->initial_ts = get_time_us();
+               /* Number of messages lost */
+               server->lost += (server->counter < counter ? counter - server->counter : server->report - server->counter);
+            }
+
+            /* Increase the index of message */
+            server->counter = counter + 1;
+            /* Reporting if it necessary */
+            if (0 == (server->counter % server->report))
+            {
+               fprintf (stdout, "Timestamp: %u microseconds\n", get_time_us());
+               fprintf (
+                        stdout, "MESSAGES recv %u lost %u LATENCY min %u avg %u max %u THOUGHPUT %.1f m/s\n",
+                       server->recv, server->lost, server->min_time,
+                       DIV(server->tot_time,server->recv), server->max_time, server->recv/((double)(get_time_us()-server->initial_ts)/1000000)
+                       );
+
+               /* Setup values for new test cycle */
+               if (server->counter < server->report)
+               {
+                  /* We lose some messages and receive the first one from
+                      the new cycle */
+                  server->recv     = 1;
+                  server->lost     = counter - 1;
+                  server->min_time = diff;
+                  server->tot_time = diff;
+                  server->max_time = diff;
+               }
+               else
+               {
+                  /* Normal flow, all messages received */
+                  server->recv     = 0;
+                  server->lost     = 0;
+                  server->min_time = (unsigned)(-1);
+                  server->tot_time = 0;
+                  server->max_time = 0;
+                  server->initial_ts = get_time_us();
+               }
             }
          }
-
          return 0;
       }
    }

@@ -1,3 +1,43 @@
+Roundtrip mode
+==============
+
+This pair of tools can now also be used to measure roundtrip latency/throughput in
+addition to the default mode by using '-r' switch with the dping. For example:
+
+dpong 1000 &
+dping -r 1000
+
+(if the amount of messages is not given, the default value of 100 will be used)
+
+Currently the roundtrip latency seems to be a bit more than 2x the single-way
+latency, with the reply taking more time than the original message. As an example,
+ Fremantle, w46 RD release, RX-51 HW:
+
+single-way (fire-and-forget):
+
+Timestamp: 1400652543 microseconds
+MESSAGES recv 1000 lost 0 LATENCY min 113952 avg 191407 max 262817 THOUGHPUT 1296.6 m/s
+Timestamp: 1401427446 microseconds
+MESSAGES recv 1000 lost 0 LATENCY min 116333 avg 186109 max 260620 THOUGHPUT 1290.7 m/s
+
+Roundtrip mode:
+
+Timestamp: 1476999864 microseconds
+Dping->dpong statistics: LATENCY min 143463 avg 181594 max 222106
+dping<-dpong statistics: LATENCY min 264466 avg 298409 max 326050
+Statistics for the whole roundtrip:
+MESSAGES recv 1000 lost 0 LATENCY min 407929 avg 480003 max 548156 THOUGHPUT 585.2 m/s
+
+Timestamp: 1478743455 microseconds
+Dping->dpong statistics: LATENCY min 148620 avg 181843 max 224335
+dping<-dpong statistics: LATENCY min 267578 avg 297071 max 328705
+Statistics for the whole roundtrip:
+MESSAGES recv 1000 lost 0 LATENCY min 416198 avg 478914 max 553040 THOUGHPUT 573.6 m/s
+
+
+Old(er) test results by Leonid:
+===============================
+
 I used the following test pattern (server and client):
    run-standalone.sh ./dpong
    run-standalone.sh ./dping

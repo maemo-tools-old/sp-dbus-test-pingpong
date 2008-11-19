@@ -34,12 +34,18 @@ typedef struct
    unsigned counter;
    unsigned recv;
    unsigned lost;
-   unsigned min_time;
-   unsigned max_time;
-   unsigned tot_time;
+   unsigned dpong_min_time;
+   unsigned dpong_max_time;
+   unsigned dpong_tot_time;
+   unsigned dping_min_time;
+   unsigned dping_max_time;
+   unsigned dping_tot_time;
+   unsigned total_min_time;
+   unsigned total_max_time;
+   unsigned total_tot_time;
    unsigned initial_ts;
    unsigned tot_pending;
- 
+
    GMainContext *context;
    GMainLoop *loop;
 
@@ -66,8 +72,12 @@ static STATS* stats_new(void)
    {
       memset(stats, 0, sizeof(*stats));
       stats->report   = s_report; /** FIXME ** */
-      stats->min_time = (unsigned)-1;
-      stats->max_time = 0;
+      stats->dping_min_time = (unsigned)-1;
+      stats->dping_max_time = 0;
+      stats->dpong_min_time = (unsigned)-1;
+      stats->dpong_max_time = 0;
+      stats->total_min_time = (unsigned)-1;
+      stats->total_max_time = 0;
       stats->initial_ts = get_time_us();
    }
 
@@ -82,25 +92,44 @@ static void stats_delete(STATS* stats)
 
 static void notify_func(DBusPendingCall *pending, void *data)
 {
-   unsigned counter, timestamp;
+   unsigned counter, orig_timestamp, timestamp;
    DBusMessage *reply = dbus_pending_call_steal_reply(pending);
    int type = dbus_message_get_type(reply);
+
+  /* Make the compiler happy */
+   data = data;
 
    switch (type)
    {
       case DBUS_MESSAGE_TYPE_METHOD_RETURN:
-         if ( dbus_message_get_args(reply, &s_error, DBUS_TYPE_UINT32, &counter, DBUS_TYPE_UINT32, &timestamp, DBUS_TYPE_INVALID))
+         if ( dbus_message_get_args(reply, &s_error, DBUS_TYPE_UINT32, &counter, DBUS_TYPE_UINT32, &orig_timestamp, DBUS_TYPE_UINT32, &timestamp, DBUS_TYPE_INVALID))
           {
              STATS* stats = s_stats;
-             const unsigned diff = get_time_us() - timestamp;
+             const unsigned now = get_time_us();
+             const unsigned diff = now - orig_timestamp;
+             const unsigned dping_dpong_diff = timestamp-orig_timestamp;
 
-            if (stats->min_time > diff)
-               stats->min_time = diff;
+            if (stats->dping_min_time > diff)
+               stats->dping_min_time = diff;
 
-            if (stats->max_time < diff)
-               stats->max_time = diff;
+            if (stats->dpong_min_time > dping_dpong_diff)
+               stats->dpong_min_time = dping_dpong_diff;
 
-            stats->tot_time += diff;
+            if (stats->dping_max_time < diff)
+               stats->dping_max_time = diff;
+
+            if (stats->dpong_max_time < dping_dpong_diff)
+               stats->dpong_max_time = dping_dpong_diff;
+
+            if (stats->total_min_time > (stats->dpong_min_time + stats->dping_min_time))
+               stats->total_min_time = (stats->dpong_min_time + stats->dping_min_time);
+
+            if (stats->total_max_time < (stats->dpong_max_time + stats->dping_max_time))
+               stats->total_max_time = (stats->dpong_max_time + stats->dping_max_time);
+
+            stats->dping_tot_time += diff;
+            stats->dpong_tot_time += dping_dpong_diff;
+            stats->total_tot_time += (diff + dping_dpong_diff);
 
             /* Check message losing */
             if (counter == stats->counter)
@@ -119,11 +148,22 @@ static void notify_func(DBusPendingCall *pending, void *data)
                         /* Reporting if it necessary */
             if (0 == (stats->counter % stats->report))
             {
-               fprintf (stdout, "Timestamp: %u microseconds\n", get_time_us());
+               fprintf (stdout, "Timestamp: %u microseconds\n", now);
                fprintf (
-                        stdout, "MESSAGES recv %u lost %u LATENCY min %u avg %u max %u THOUGHPUT %.1f m/s\n",
-                       stats->recv, stats->lost, stats->min_time,
-                       DIV(stats->tot_time,stats->recv), stats->max_time, stats->recv/((double)(get_time_us() - stats->initial_ts)/1000000));
+                        stdout, "Dping->dpong statistics: LATENCY min %u avg %u max %u\n",
+                       stats->dpong_min_time,
+                       DIV(stats->dpong_tot_time,stats->recv), stats->dpong_max_time);
+
+               fprintf (
+                        stdout, "dping<-dpong statistics: LATENCY min %u avg %u max %u\n",
+                       stats->dping_min_time, DIV(stats->dping_tot_time,stats->recv), stats->dping_max_time);
+               fprintf (stdout, "Statistics for the whole roundtrip:\n");
+                fprintf (
+                        stdout, "MESSAGES recv %u lost %u LATENCY min %u avg %u max %u THOUGHPUT %.1f m/s\n\n",
+                       stats->recv, stats->lost, stats->total_min_time,
+                       DIV(stats->total_tot_time,stats->recv), stats->total_max_time, stats->recv/((double)(now - stats->initial_ts)/1000000));
+
+
                              /* Setup values for new test cycle */
                if (stats->counter < stats->report)
                {
@@ -131,18 +171,30 @@ static void notify_func(DBusPendingCall *pending, void *data)
                       the new cycle */
                   stats->recv     = 1;
                   stats->lost     = counter - 1;
-                  stats->min_time = diff;
-                  stats->tot_time = diff;
-                  stats->max_time = diff;
+                  stats->dping_min_time = diff;
+                  stats->dping_tot_time = diff;
+                  stats->dping_max_time = diff;
+                  stats->dpong_min_time = dping_dpong_diff;
+                  stats->dpong_tot_time = dping_dpong_diff;
+                  stats->dpong_max_time = dping_dpong_diff;
+                  stats->total_min_time = diff + dping_dpong_diff;
+                  stats->total_tot_time = diff + dping_dpong_diff;
+                  stats->total_max_time = diff + dping_dpong_diff;
                }
                else
                {
                   /* Normal flow, all messages received */
                   stats->recv     = 0;
                   stats->lost     = 0;
-                  stats->min_time = (unsigned)(-1);
-                  stats->tot_time = 0;
-                  stats->max_time = 0;
+                  stats->dping_min_time = (unsigned)(-1);
+                  stats->dping_tot_time = 0;
+                  stats->dping_max_time = 0;
+                  stats->dpong_min_time = (unsigned)(-1);
+                  stats->dpong_tot_time = 0;
+                  stats->dpong_max_time = 0;
+                  stats->total_min_time = (unsigned)(-1);
+                  stats->total_tot_time = 0;
+                  stats->total_max_time = 0;
                   stats->initial_ts = get_time_us();
                }
 
@@ -189,11 +241,27 @@ int main(int argc, char *argv[])
 
    dbus_connection_setup_with_g_main (session, s_stats->context) ;
 
+   /* Check if user wants to use the roundtrip mode */
+
    if ( argc == 2 && !strcmp(argv[1], "-r") )
-      {
-         oneway = FALSE;
-         printf("****TEMPORARY DEBUG*****: making a roundtrip instead of f&f\n");
-      }
+   {
+      oneway = FALSE;
+   }
+   else if ( argc == 3 && !strcmp(argv[1], "-r") )
+   {
+     unsigned report = (unsigned)atoi(argv[2]);
+     if ( report != 0 )
+     {
+        s_stats->report = report;
+     }
+     oneway = FALSE;
+   }
+
+   if (oneway == FALSE)
+   {
+     fprintf (stdout, "Measuring the roundtrip performance instead of one-way performance.\n");
+     fprintf (stdout, "Calculating the statistics for batches of %u messages\n", s_stats->report);
+   }
 
    /* Flooding */
    while (1)

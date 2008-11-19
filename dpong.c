@@ -88,11 +88,11 @@ static DBusHandlerResult ping_object_message_handler_cb(DBusConnection* a_conn, 
    if (dbus_message_is_method_call(a_message, INTERFACE, METHOD))
    {
       unsigned counter;
-      unsigned timestamp;
+      unsigned orig_timestamp;
 
-      if ( dbus_message_get_args(a_message, &s_error, DBUS_TYPE_UINT32, &counter, DBUS_TYPE_UINT32, &timestamp, DBUS_TYPE_INVALID) )
+      if ( dbus_message_get_args(a_message, &s_error, DBUS_TYPE_UINT32, &counter, DBUS_TYPE_UINT32, &orig_timestamp, DBUS_TYPE_INVALID) )
       {
-         const unsigned diff = get_time_us() - timestamp;
+         const unsigned diff = get_time_us() - orig_timestamp;
          SERVER* server = s_server;  /* Probably will be identified for each client */
 
          /* If we're measuring the roundtrip performance, then just reply
@@ -100,12 +100,13 @@ static DBusHandlerResult ping_object_message_handler_cb(DBusConnection* a_conn, 
          if (!dbus_message_get_no_reply(a_message))
          {
             DBusMessage *reply;
+            unsigned timestamp = get_time_us();
             reply = dbus_message_new_method_return(a_message);
             if (NULL == reply)
             {
                fatal("NULL reply message in dpong.c");
             }
-            dbus_message_append_args(reply, DBUS_TYPE_UINT32, &counter, DBUS_TYPE_UINT32, &timestamp, DBUS_TYPE_INVALID);
+            dbus_message_append_args(reply, DBUS_TYPE_UINT32, &counter, DBUS_TYPE_UINT32, &orig_timestamp, DBUS_TYPE_UINT32, &timestamp, DBUS_TYPE_INVALID);
             if (!dbus_connection_send(a_conn, reply, NULL))
             {
                fprintf(stderr, "sending the reply failed\n");

@@ -49,7 +49,7 @@ typedef struct
  * Local data.
  * ========================================================================= */
 
-static unsigned s_report = 100;
+static unsigned s_report = 1000;
 static SERVER*  s_server;
 static DBusError s_error;
 
@@ -64,9 +64,7 @@ static SERVER* server_new(void)
    if (server)
    {
       memset(server, 0, sizeof(*server));
-      server->report   = s_report;
-      server->min_time = (unsigned)-1;
-      server->max_time = 0;
+      server->report     = s_report;
       server->initial_ts = get_time_us();
    }
 
@@ -92,11 +90,13 @@ static DBusHandlerResult ping_object_message_handler_cb(DBusConnection* a_conn, 
 
       if ( dbus_message_get_args(a_message, &s_error, DBUS_TYPE_UINT32, &counter, DBUS_TYPE_UINT32, &orig_timestamp, DBUS_TYPE_INVALID) )
       {
-         const unsigned diff = get_time_us() - orig_timestamp;
+         const unsigned now = get_time_us();
+         /* We shall be careful: message can be lost */
+         const unsigned diff = (now > orig_timestamp ? now - orig_timestamp : 0);
          SERVER* server = s_server;  /* Probably will be identified for each client */
 
          /* If we're measuring the roundtrip performance, then just reply
-            and be done with it */ 
+            and be done with it */
          if (!dbus_message_get_no_reply(a_message))
          {
             DBusMessage *reply;
@@ -116,19 +116,20 @@ static DBusHandlerResult ping_object_message_handler_cb(DBusConnection* a_conn, 
          }
          else
          {
-
-            if (server->min_time > diff)
-               server->min_time = diff;
-
-            if (server->max_time < diff)
-               server->max_time = diff;
-
-            server->tot_time += diff;
-
             /* Check message losing */
             if (counter == server->counter)
             {
                server->recv++;
+               if (diff > 0)
+               {
+                 if (0 == server->min_time || server->min_time > diff)
+                   server->min_time = diff;
+
+                 if (0 == server->max_time || server->max_time < diff)
+                   server->max_time = diff;
+
+                 server->tot_time += diff;
+               }
             }
             else
             {
@@ -141,11 +142,11 @@ static DBusHandlerResult ping_object_message_handler_cb(DBusConnection* a_conn, 
             /* Reporting if it necessary */
             if (0 == (server->counter % server->report))
             {
-               fprintf (stdout, "Timestamp: %u microseconds\n", get_time_us());
+               fprintf (stdout, "dpong timestamp: %u microseconds\n", get_time_us());
                fprintf (
-                        stdout, "MESSAGES recv %u lost %u LATENCY min %u avg %u max %u THOUGHPUT %.1f m/s\n",
+                        stdout, "MESSAGES recv %u lost %u LATENCY min %u avg %u max %u THROUGHPUT %.1f m/s\n",
                        server->recv, server->lost, server->min_time,
-                       DIV(server->tot_time,server->recv), server->max_time, server->recv/((double)(get_time_us()-server->initial_ts)/1000000)
+                       (server->tot_time / server->recv), server->max_time, server->recv/((double)(get_time_us()-server->initial_ts)/1000000)
                        );
 
                /* Setup values for new test cycle */
@@ -164,7 +165,7 @@ static DBusHandlerResult ping_object_message_handler_cb(DBusConnection* a_conn, 
                   /* Normal flow, all messages received */
                   server->recv     = 0;
                   server->lost     = 0;
-                  server->min_time = (unsigned)(-1);
+                  server->min_time = 0;
                   server->tot_time = 0;
                   server->max_time = 0;
                   server->initial_ts = get_time_us();
@@ -212,6 +213,7 @@ int main(int argc, const char* argv[])
 
    printf ("ping server\n");
    printf ("reporting period is set to %u messages\n", s_report);
+   set_base_time();
 
    dbus_error_init (&s_error) ;
 

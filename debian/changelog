@@ -1,3 +1,9 @@
+sp-dbus-test-pingpong (0.3) unstable; urgency=low
+
+  * Fixes for time-handling related issue(s) applied. Fixes: NB#100420
+
+ -- Eero Tamminen <eero.tamminen@nokia.com>  Mon,  9 Feb 2009 14:03:03 +0200
+
 sp-dbus-test-pingpong (0.2) unstable; urgency=low
 
   * The optional roundtrip latency mode has been implemented (can be

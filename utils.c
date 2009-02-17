@@ -32,22 +32,29 @@
  * Local data.
  * ========================================================================= */
 
+time_t base_time;
+
 /* ========================================================================= *
  * Local methods.
  * ========================================================================= */
 
-/* ------------------------------------------------------------------------- *
- * mu_load -- open meminfo file and load values.
- * parameters:
- *    path - path to file to handle.
- *    vals - array of values to be handled.
- *    size - size of vals array.
- * returns: number of sucessfully loaded values.
- * ------------------------------------------------------------------------- */
-
 /* ========================================================================= *
  * Public methods.
  * ========================================================================= */
+
+/* ------------------------------------------------------------------------- *
+ * set_base_time -- set test base time.
+ * parameters: message
+ * returns: nothing
+ * ------------------------------------------------------------------------- */
+void set_base_time(void)
+{
+  const time_t t = time(NULL);
+
+  base_time = t - (t % 30 * 60);  /* test shall start in 30 minutes boundary */
+  fprintf (stdout, "base test time set to %ld seconds\n", base_time);
+} /* set_base_time */
+
 
 /* ------------------------------------------------------------------------- *
  * fatal -- prints the error message and die.

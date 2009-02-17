@@ -56,7 +56,7 @@ typedef struct
  * Local data.
  * ========================================================================= */
 
-static unsigned s_report = 100;
+static unsigned s_report = 1000;
 static DBusError s_error;
 static STATS*  s_stats;
 
@@ -71,13 +71,7 @@ static STATS* stats_new(void)
    if (stats)
    {
       memset(stats, 0, sizeof(*stats));
-      stats->report   = s_report; /** FIXME ** */
-      stats->dping_min_time = (unsigned)-1;
-      stats->dping_max_time = 0;
-      stats->dpong_min_time = (unsigned)-1;
-      stats->dpong_max_time = 0;
-      stats->total_min_time = (unsigned)-1;
-      stats->total_max_time = 0;
+      stats->report     = s_report; /** FIXME ** */
       stats->initial_ts = get_time_us();
    }
 
@@ -106,30 +100,33 @@ static void notify_func(DBusPendingCall *pending, void *data)
           {
              STATS* stats = s_stats;
              const unsigned now = get_time_us();
-             const unsigned diff = now - orig_timestamp;
+             const unsigned diff = (now > orig_timestamp ? now - orig_timestamp : 0);
              const unsigned dping_dpong_diff = timestamp-orig_timestamp;
 
-            if (stats->dping_min_time > diff)
-               stats->dping_min_time = diff;
+             if (diff > 0)
+             {
+               if (0 == stats->dping_min_time || stats->dping_min_time > diff)
+                 stats->dping_min_time = diff;
 
-            if (stats->dpong_min_time > dping_dpong_diff)
-               stats->dpong_min_time = dping_dpong_diff;
+               if (0 == stats->dpong_min_time || stats->dpong_min_time > dping_dpong_diff)
+                 stats->dpong_min_time = dping_dpong_diff;
 
-            if (stats->dping_max_time < diff)
-               stats->dping_max_time = diff;
+               if (0 == stats->dping_max_time || stats->dping_max_time < diff)
+                 stats->dping_max_time = diff;
 
-            if (stats->dpong_max_time < dping_dpong_diff)
-               stats->dpong_max_time = dping_dpong_diff;
+               if (0 == stats->dpong_max_time || stats->dpong_max_time < dping_dpong_diff)
+                 stats->dpong_max_time = dping_dpong_diff;
 
-            if (stats->total_min_time > (stats->dpong_min_time + stats->dping_min_time))
-               stats->total_min_time = (stats->dpong_min_time + stats->dping_min_time);
+               if (0 == stats->total_min_time || stats->total_min_time > (stats->dpong_min_time + stats->dping_min_time))
+                 stats->total_min_time = (stats->dpong_min_time + stats->dping_min_time);
 
-            if (stats->total_max_time < (stats->dpong_max_time + stats->dping_max_time))
-               stats->total_max_time = (stats->dpong_max_time + stats->dping_max_time);
+               if (0 == stats->total_max_time || stats->total_max_time < (stats->dpong_max_time + stats->dping_max_time))
+                 stats->total_max_time = (stats->dpong_max_time + stats->dping_max_time);
 
-            stats->dping_tot_time += diff;
-            stats->dpong_tot_time += dping_dpong_diff;
-            stats->total_tot_time += (diff + dping_dpong_diff);
+               stats->dping_tot_time += diff;
+               stats->dpong_tot_time += dping_dpong_diff;
+               stats->total_tot_time += (diff + dping_dpong_diff);
+             }
 
             /* Check message losing */
             if (counter == stats->counter)
@@ -148,20 +145,20 @@ static void notify_func(DBusPendingCall *pending, void *data)
                         /* Reporting if it necessary */
             if (0 == (stats->counter % stats->report))
             {
-               fprintf (stdout, "Timestamp: %u microseconds\n", now);
+               fprintf (stdout, "dping timestamp: %u microseconds\n", now);
                fprintf (
                         stdout, "Dping->dpong statistics: LATENCY min %u avg %u max %u\n",
                        stats->dpong_min_time,
-                       DIV(stats->dpong_tot_time,stats->recv), stats->dpong_max_time);
+                       (stats->dpong_tot_time / stats->recv), stats->dpong_max_time);
 
                fprintf (
                         stdout, "dping<-dpong statistics: LATENCY min %u avg %u max %u\n",
-                       stats->dping_min_time, DIV(stats->dping_tot_time,stats->recv), stats->dping_max_time);
+                       stats->dping_min_time, (stats->dping_tot_time / stats->recv), stats->dping_max_time);
                fprintf (stdout, "Statistics for the whole roundtrip:\n");
-                fprintf (
-                        stdout, "MESSAGES recv %u lost %u LATENCY min %u avg %u max %u THOUGHPUT %.1f m/s\n\n",
+               fprintf (
+                        stdout, "MESSAGES recv %u lost %u LATENCY min %u avg %u max %u THROUGHPUT %.1f m/s\n\n",
                        stats->recv, stats->lost, stats->total_min_time,
-                       DIV(stats->total_tot_time,stats->recv), stats->total_max_time, stats->recv/((double)(now - stats->initial_ts)/1000000));
+                       (stats->total_tot_time / stats->recv), stats->total_max_time, stats->recv/((double)(now - stats->initial_ts)/1000000));
 
 
                              /* Setup values for new test cycle */
@@ -186,13 +183,13 @@ static void notify_func(DBusPendingCall *pending, void *data)
                   /* Normal flow, all messages received */
                   stats->recv     = 0;
                   stats->lost     = 0;
-                  stats->dping_min_time = (unsigned)(-1);
+                  stats->dping_min_time = 0;
                   stats->dping_tot_time = 0;
                   stats->dping_max_time = 0;
-                  stats->dpong_min_time = (unsigned)(-1);
+                  stats->dpong_min_time = 0;
                   stats->dpong_tot_time = 0;
                   stats->dpong_max_time = 0;
-                  stats->total_min_time = (unsigned)(-1);
+                  stats->total_min_time = 0;
                   stats->total_tot_time = 0;
                   stats->total_max_time = 0;
                   stats->initial_ts = get_time_us();
@@ -226,6 +223,7 @@ int main(int argc, char *argv[])
    unsigned        timestamp;
    dbus_bool_t     oneway = TRUE;
 
+   set_base_time();
    g_type_init();
    s_stats = stats_new();
 

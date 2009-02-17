@@ -25,7 +25,7 @@ extern "C" {
  * Includes
  * ========================================================================= */
 
-#include <time.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #define DBUS_API_SUBJECT_TO_CHANGE
@@ -36,14 +36,13 @@ extern "C" {
  * Definitions.
  * ========================================================================= */
 
-/* Division with rounding up */
-#define DIV(val,div)    (((val) + ((div) >> 1)) / (div))
+extern time_t base_time;
 
-/* Clock source */
-#define TIME_SOURCE     CLOCK_REALTIME
+/* Moving to base seconds */
+#define BASE_US(s)    ((unsigned)((s) - base_time) * 1000000u)
 
-/* Read struct timespec in microseconds, limit is about 4000 seconds from by system start */
-#define TS_TO_US(ts)    ((ts).tv_sec * 1000000u + DIV((ts).tv_nsec,1000u))
+/* Read struct timeval in microseconds with adjusting system start moment */
+#define TV_TO_US(tv)    (BASE_US(tv.tv_sec) + (unsigned)tv.tv_usec)
 
 /* Type of DBUS server */
 #define DBUS_SERVER_TYPE   DBUS_BUS_SYSTEM
@@ -60,14 +59,21 @@ extern "C" {
  * ========================================================================= */
 
 /* ------------------------------------------------------------------------- *
+ * set_base_time -- set test base time.
+ * parameters: message
+ * returns: nothing
+ * ------------------------------------------------------------------------- */
+void set_base_time(void);
+
+/* ------------------------------------------------------------------------- *
  * get_time_us -- returns current time in microseconds.
  * parameters: nothing
- * returns: time in microseconds, 0-4K
+ * returns: time in microseconds
  * ------------------------------------------------------------------------- */
 static inline unsigned get_time_us(void)
 {
-   struct timespec ts;
-   return (0 == clock_gettime(TIME_SOURCE, &ts) ? TS_TO_US(ts) : 0);
+   struct timeval tv;
+   return (0 == gettimeofday(&tv, NULL) ? TV_TO_US(tv) : BASE_US(time(NULL)));
 } /* get_time_us */
 
 /* ------------------------------------------------------------------------- *

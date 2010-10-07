@@ -1,3 +1,9 @@
+sp-dbus-test-pingpong (0.4) unstable; urgency=low
+
+  * Integrate for Harmattan - Fixes: NB#196812
+
+ -- Tommi Rantala <ext-tommi.1.rantala@nokia.com>  Thu, 07 Oct 2010 16:37:47 +0300
+
 sp-dbus-test-pingpong (0.3) unstable; urgency=low
 
   * Fixes for time-handling related issue(s) applied. Fixes: NB#100420

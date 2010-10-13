@@ -51,7 +51,7 @@ void set_base_time(void)
 {
   const time_t t = time(NULL);
 
-  base_time = t - (t % 30 * 60);  /* test shall start in 30 minutes boundary */
+  base_time = t - (t % (30 * 60));  /* test shall start in 30 minutes boundary */
   fprintf (stdout, "base test time set to %ld seconds\n", base_time);
 } /* set_base_time */
 

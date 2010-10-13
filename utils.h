@@ -45,8 +45,8 @@ extern time_t base_time;
 #define TV_TO_US(tv)    (BASE_US(tv.tv_sec) + (unsigned)tv.tv_usec)
 
 /* Type of DBUS server */
-#define DBUS_SERVER_TYPE   DBUS_BUS_SYSTEM
-/* #define DBUS_SERVER_TYPE   DBUS_BUS_SESSION */
+/* #define DBUS_SERVER_TYPE   DBUS_BUS_SYSTEM */
+#define DBUS_SERVER_TYPE   DBUS_BUS_SESSION
 
 /* Definitions for proper addressing for ping-pong */
 #define SERVICE   "com.nokia.PingTest"

@@ -1,3 +1,10 @@
+sp-dbus-test-pingpong (0.5) unstable; urgency=low
+
+  * Attach to DBus Session Bus instead of System Bus.
+  * Fix latency values.
+
+ -- Tommi Rantala <ext-tommi.1.rantala@nokia.com>  Wed, 13 Oct 2010 15:48:12 +0300
+
 sp-dbus-test-pingpong (0.4) unstable; urgency=low
 
   * Integrate for Harmattan - Fixes: NB#196812

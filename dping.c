@@ -1,5 +1,6 @@
 /* ========================================================================= *
  * File: dping.c
+ * vim: et:ts=3:sw=3:
  *
  * Copyright (C) 2005 Nokia. All rights reserved.
  *
@@ -64,7 +65,8 @@ static STATS*  s_stats;
  * Local methods.
  * ========================================================================= */
 
-static STATS* stats_new(void)
+static STATS *
+stats_new(void)
 {
    STATS* stats = (STATS*)malloc(sizeof(STATS));
 
@@ -78,13 +80,14 @@ static STATS* stats_new(void)
    return stats;
 } /* stats_new */
 
-static void stats_delete(STATS* stats)
+static void
+stats_delete(STATS* stats)
 {
    free(stats);
 }
 
-
-static void notify_func(DBusPendingCall *pending, void *data)
+static void
+notify_func(DBusPendingCall *pending, void *data)
 {
    unsigned counter, orig_timestamp, timestamp;
    DBusMessage *reply = dbus_pending_call_steal_reply(pending);
@@ -96,7 +99,11 @@ static void notify_func(DBusPendingCall *pending, void *data)
    switch (type)
    {
       case DBUS_MESSAGE_TYPE_METHOD_RETURN:
-         if ( dbus_message_get_args(reply, &s_error, DBUS_TYPE_UINT32, &counter, DBUS_TYPE_UINT32, &orig_timestamp, DBUS_TYPE_UINT32, &timestamp, DBUS_TYPE_INVALID))
+         if ( dbus_message_get_args(reply, &s_error,
+                  DBUS_TYPE_UINT32, &counter,
+                  DBUS_TYPE_UINT32, &orig_timestamp,
+                  DBUS_TYPE_UINT32, &timestamp,
+                  DBUS_TYPE_INVALID))
           {
              STATS* stats = s_stats;
              const unsigned now = get_time_us();
@@ -151,14 +158,13 @@ static void notify_func(DBusPendingCall *pending, void *data)
                        stats->dpong_min_time,
                        (stats->dpong_tot_time / stats->recv), stats->dpong_max_time);
 
-               fprintf (
-                        stdout, "dping<-dpong statistics: LATENCY min %u avg %u max %u\n",
+               fprintf (stdout, "dping<-dpong statistics: LATENCY min %u avg %u max %u\n",
                        stats->dping_min_time, (stats->dping_tot_time / stats->recv), stats->dping_max_time);
                fprintf (stdout, "Statistics for the whole roundtrip:\n");
-               fprintf (
-                        stdout, "MESSAGES recv %u lost %u LATENCY min %u avg %u max %u THROUGHPUT %.1f m/s\n\n",
-                       stats->recv, stats->lost, stats->total_min_time,
-                       (stats->total_tot_time / stats->recv), stats->total_max_time, stats->recv/((double)(now - stats->initial_ts)/1000000));
+               fprintf (stdout, "MESSAGES recv %u lost %u LATENCY min %u avg %u max %u THROUGHPUT %.1f m/s\n\n",
+                       stats->recv, stats->lost,
+                       stats->total_min_time, (stats->total_tot_time / stats->recv), stats->total_max_time,
+                       stats->recv/((double)(now - stats->initial_ts)/1000000));
 
 
                              /* Setup values for new test cycle */
@@ -274,7 +280,10 @@ int main(int argc, char *argv[])
 
       dbus_message_set_no_reply (message, oneway);
       timestamp = get_time_us();
-      dbus_message_append_args(message, DBUS_TYPE_UINT32, &counter, DBUS_TYPE_UINT32, &timestamp, DBUS_TYPE_INVALID);
+      dbus_message_append_args(message,
+            DBUS_TYPE_UINT32, &counter,
+            DBUS_TYPE_UINT32, &timestamp,
+            DBUS_TYPE_INVALID);
       counter++;
       if (!oneway)
       {

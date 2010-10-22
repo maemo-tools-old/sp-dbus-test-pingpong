@@ -1,5 +1,6 @@
 /* ========================================================================= *
  * File: dpong.c
+ * vim: et:ts=3:sw=3:
  *
  * Copyright (C) 2005 Nokia. All rights reserved.
  *
@@ -57,7 +58,8 @@ static DBusError s_error;
  * Local methods.
  * ========================================================================= */
 
-static SERVER* server_new(void)
+static SERVER *
+server_new(void)
 {
    SERVER* server = (SERVER*)malloc(sizeof(SERVER));
 
@@ -71,12 +73,14 @@ static SERVER* server_new(void)
    return server;
 } /* server_new */
 
-static void server_delete(SERVER* server)
+static void
+server_delete(SERVER* server)
 {
    free(server);
 }
 
-static DBusHandlerResult ping_object_message_handler_cb(DBusConnection* a_conn, DBusMessage *a_message, void* a_user_data)
+static DBusHandlerResult
+ping_object_message_handler_cb(DBusConnection* a_conn, DBusMessage *a_message, void* a_user_data)
 {
    /* Make compiler happy */
    a_conn = a_conn;
@@ -88,7 +92,10 @@ static DBusHandlerResult ping_object_message_handler_cb(DBusConnection* a_conn, 
       unsigned counter;
       unsigned orig_timestamp;
 
-      if ( dbus_message_get_args(a_message, &s_error, DBUS_TYPE_UINT32, &counter, DBUS_TYPE_UINT32, &orig_timestamp, DBUS_TYPE_INVALID) )
+      if ( dbus_message_get_args(a_message, &s_error,
+               DBUS_TYPE_UINT32, &counter,
+               DBUS_TYPE_UINT32, &orig_timestamp,
+               DBUS_TYPE_INVALID) )
       {
          const unsigned now = get_time_us();
          /* We shall be careful: message can be lost */
@@ -106,7 +113,11 @@ static DBusHandlerResult ping_object_message_handler_cb(DBusConnection* a_conn, 
             {
                fatal("NULL reply message in dpong.c");
             }
-            dbus_message_append_args(reply, DBUS_TYPE_UINT32, &counter, DBUS_TYPE_UINT32, &orig_timestamp, DBUS_TYPE_UINT32, &timestamp, DBUS_TYPE_INVALID);
+            dbus_message_append_args(reply,
+                  DBUS_TYPE_UINT32, &counter,
+                  DBUS_TYPE_UINT32, &orig_timestamp,
+                  DBUS_TYPE_UINT32, &timestamp,
+                  DBUS_TYPE_INVALID);
             if (!dbus_connection_send(a_conn, reply, NULL))
             {
                fprintf(stderr, "sending the reply failed\n");
@@ -143,10 +154,10 @@ static DBusHandlerResult ping_object_message_handler_cb(DBusConnection* a_conn, 
             if (0 == (server->counter % server->report))
             {
                fprintf (stdout, "dpong timestamp: %u microseconds\n", get_time_us());
-               fprintf (
-                        stdout, "MESSAGES recv %u lost %u LATENCY min %u avg %u max %u THROUGHPUT %.1f m/s\n",
-                       server->recv, server->lost, server->min_time,
-                       (server->tot_time / server->recv), server->max_time, server->recv/((double)(get_time_us()-server->initial_ts)/1000000)
+               fprintf (stdout, "MESSAGES recv %u lost %u LATENCY min %u avg %u max %u THROUGHPUT %.1f m/s\n",
+                       server->recv, server->lost,
+                       server->min_time, (server->tot_time / server->recv), server->max_time,
+                       server->recv/((double)(get_time_us()-server->initial_ts)/1000000)
                        );
 
                /* Setup values for new test cycle */
@@ -179,7 +190,8 @@ static DBusHandlerResult ping_object_message_handler_cb(DBusConnection* a_conn, 
    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 } /* ping_object_message_handler_cb */
 
-static void ping_object_unregistered_cb(DBusConnection* a_conn, void* a_user_data)
+static void
+ping_object_unregistered_cb(DBusConnection* a_conn, void* a_user_data)
 {
    /* Make compiler happy */
    a_conn = a_conn;
@@ -254,7 +266,8 @@ int main(int argc, const char* argv[])
       fatal("failed registering object path");
    }
 
-   fprintf (stderr, "ping server base service is %s\n", dbus_bus_get_unique_name(session));
+   fprintf (stderr, "ping server base service is %s\n",
+         dbus_bus_get_unique_name(session));
 
    fprintf (stderr, "ping server is ready to accept calls\n");
    g_main_loop_run (s_server->loop) ;

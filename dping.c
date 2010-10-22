@@ -152,16 +152,14 @@ notify_func(DBusPendingCall *pending, void *data)
                         /* Reporting if it necessary */
             if (0 == (stats->counter % stats->report))
             {
-               fprintf (stdout, "dping timestamp: %u microseconds\n", now);
-               fprintf (
-                        stdout, "Dping->dpong statistics: LATENCY min %u avg %u max %u\n",
+               /* fprintf (stdout, "dping timestamp: %u microseconds\n", now); */
+               fprintf (stdout, "dping->dpong statistics: LATENCY min %5u avg %5u max %5u\n",
                        stats->dpong_min_time,
                        (stats->dpong_tot_time / stats->recv), stats->dpong_max_time);
-
-               fprintf (stdout, "dping<-dpong statistics: LATENCY min %u avg %u max %u\n",
+               fprintf (stdout, "dping<-dpong statistics: LATENCY min %5u avg %5u max %5u\n",
                        stats->dping_min_time, (stats->dping_tot_time / stats->recv), stats->dping_max_time);
                fprintf (stdout, "Statistics for the whole roundtrip:\n");
-               fprintf (stdout, "MESSAGES recv %u lost %u LATENCY min %u avg %u max %u THROUGHPUT %.1f m/s\n\n",
+               fprintf (stdout, "MESSAGES recv %u lost %u LATENCY min %5u avg %5u max %5u THROUGHPUT %.1f m/s\n\n",
                        stats->recv, stats->lost,
                        stats->total_min_time, (stats->total_tot_time / stats->recv), stats->total_max_time,
                        stats->recv/((double)(now - stats->initial_ts)/1000000));
@@ -206,10 +204,10 @@ notify_func(DBusPendingCall *pending, void *data)
           }
          break;
       case DBUS_MESSAGE_TYPE_ERROR:
-         fprintf(stdout, "Got an error!\n");
+         fprintf(stdout, "DPING: WARNING: Got an error!\n");
          break;
       default:
-         fprintf(stdout, "Got an unexpected reply!\n");
+         fprintf(stdout, "DPING: WARNING: Got an unexpected reply!\n");
          break;
    }
    dbus_pending_call_unref(pending);
@@ -229,15 +227,16 @@ int main(int argc, char *argv[])
    unsigned        timestamp;
    dbus_bool_t     oneway = TRUE;
 
-   set_base_time();
    g_type_init();
    s_stats = stats_new();
+   set_base_time();
+   printf ("DPING: base test time set to %ld seconds.\n", base_time);
 
    dbus_error_init (&error) ;
    session = dbus_bus_get(DBUS_SERVER_TYPE, &error);
    if (check_dbus_error(&error) || NULL == session )
    {
-      fatal("NULL session in dping.c main()");
+      fatal("DPING: ERROR: dbus_bus_get() failure.");
    }
 
    s_stats->context = g_main_context_new();
@@ -263,8 +262,8 @@ int main(int argc, char *argv[])
 
    if (oneway == FALSE)
    {
-     fprintf (stdout, "Measuring the roundtrip performance instead of one-way performance.\n");
-     fprintf (stdout, "Calculating the statistics for batches of %u messages\n", s_stats->report);
+     printf ("DPING: Measuring the roundtrip performance instead of one-way performance.\n");
+     printf ("DPING: Calculating the statistics for batches of %u messages\n", s_stats->report);
    }
 
    /* Flooding */
@@ -275,7 +274,7 @@ int main(int argc, char *argv[])
       message = dbus_message_new_method_call(SERVICE, OBJECT, INTERFACE, METHOD);
       if ( NULL == message )
       {
-         fatal("NULL message in dping.c main()");
+         fatal("DPING: ERROR: dbus_message_new_method_call() failure.");
       }
 
       dbus_message_set_no_reply (message, oneway);
@@ -291,7 +290,7 @@ int main(int argc, char *argv[])
          {
             if (!dbus_pending_call_set_notify(pending, notify_func, NULL, NULL) || pending == NULL)
             {
-               fatal("Error while setting notify!\n");
+               fatal("DPING: ERROR: dbus_pending_call_set_notify() failure.");
             }
          }
       }

@@ -19,12 +19,14 @@
  * Includes
  * ========================================================================= */
 
+#include "utils.h"
+
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
 
 #include <glib/gmain.h>
-#include "utils.h"
 #include <dbus/dbus.h>
 
 /* ========================================================================= *
@@ -111,7 +113,7 @@ ping_object_message_handler_cb(DBusConnection* a_conn, DBusMessage *a_message, v
             reply = dbus_message_new_method_return(a_message);
             if (NULL == reply)
             {
-               fatal("NULL reply message in dpong.c");
+               fatal("DPONG: ERROR: dbus_message_new_method_return() failure.");
             }
             dbus_message_append_args(reply,
                   DBUS_TYPE_UINT32, &counter,
@@ -120,7 +122,7 @@ ping_object_message_handler_cb(DBusConnection* a_conn, DBusMessage *a_message, v
                   DBUS_TYPE_INVALID);
             if (!dbus_connection_send(a_conn, reply, NULL))
             {
-               fprintf(stderr, "sending the reply failed\n");
+               fprintf(stderr, "DPONG: WARNING: dbus_connection_send() failure.\n");
             }
             dbus_message_unref(reply);
             dbus_connection_flush(a_conn);
@@ -153,8 +155,8 @@ ping_object_message_handler_cb(DBusConnection* a_conn, DBusMessage *a_message, v
             /* Reporting if it necessary */
             if (0 == (server->counter % server->report))
             {
-               fprintf (stdout, "dpong timestamp: %u microseconds\n", get_time_us());
-               fprintf (stdout, "MESSAGES recv %u lost %u LATENCY min %u avg %u max %u THROUGHPUT %.1f m/s\n",
+               /* fprintf (stdout, "dpong timestamp: %u microseconds\n", get_time_us()); */
+               fprintf (stdout, "MESSAGES recv %u lost %u LATENCY min %5u avg %5u max %5u THROUGHPUT %.1f m/s\n",
                        server->recv, server->lost,
                        server->min_time, (server->tot_time / server->recv), server->max_time,
                        server->recv/((double)(get_time_us()-server->initial_ts)/1000000)
@@ -196,7 +198,7 @@ ping_object_unregistered_cb(DBusConnection* a_conn, void* a_user_data)
    /* Make compiler happy */
    a_conn = a_conn;
    a_user_data = a_user_data;
-   fprintf (stderr, "PingObject unregistered") ;
+   fprintf (stderr, "DPONG: PingObject unregistered.\n");
 } /* ping_object_unregistered_cb */
 
 
@@ -222,10 +224,11 @@ int main(int argc, const char* argv[])
 
    g_type_init();
    s_server = server_new();
-
-   printf ("ping server\n");
-   printf ("reporting period is set to %u messages\n", s_report);
    set_base_time();
+
+   printf ("DPONG: server starting with PID %u ...\n", (unsigned) getpid());
+   printf ("DPONG: reporting period is set to %u messages.\n", s_report);
+   printf ("DPONG: base test time set to %ld seconds.\n", base_time);
 
    dbus_error_init (&s_error) ;
 
@@ -236,14 +239,14 @@ int main(int argc, const char* argv[])
    session = dbus_bus_get(DBUS_SERVER_TYPE, &s_error);
    if (check_dbus_error(&s_error) || NULL == session )
    {
-      fatal("NULL session in dpong.c main()");
+      fatal("DPONG: ERROR: dbus_bus_get() failure.\n");
    }
 
    dbus_connection_setup_with_g_main (session, s_server->context) ;
    dbus_bus_request_name (session, SERVICE, DBUS_NAME_FLAG_ALLOW_REPLACEMENT, &s_error);
    if ( check_dbus_error(&s_error) )
    {
-      fatal("Unable to use service name " SERVICE);
+      fatal("DPONG: ERROR: Unable to use service name " SERVICE ".");
    }
 
 #if 0
@@ -263,13 +266,13 @@ int main(int argc, const char* argv[])
 
    if ( !dbus_connection_register_object_path(session, OBJECT, &vtable, NULL) )
    {
-      fatal("failed registering object path");
+      fatal("DPONG: ERROR: dbus_connection_register_object_path() failure.");
    }
 
-   fprintf (stderr, "ping server base service is %s\n",
+   fprintf (stderr, "DPONG: server base service is \"%s\".\n",
          dbus_bus_get_unique_name(session));
 
-   fprintf (stderr, "ping server is ready to accept calls\n");
+   fprintf (stderr, "DPONG: server is ready to accept calls!\n");
    g_main_loop_run (s_server->loop) ;
    dbus_connection_close (session);
    server_delete(s_server);

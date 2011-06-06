@@ -1,17 +1,22 @@
 /* ========================================================================= *
  * File: utils.c
  *
- * Copyright (C) 2005 Nokia. All rights reserved.
- *
- * Author: Leonid Moiseichuk <leonid.moiseichuk@nokia.com>
- *
  * Description:
  *    DBUS ping-pong utility file.
  *
- * History:
+ * Copyright (C) 2005-2011 Nokia Corporation.
  *
- * 14-Oct-2005 Leonid Moiseichuk
- * - initial version created after discussion with Eero.
+ * Author: Leonid Moiseichuk <leonid.moiseichuk@nokia.com>
+ * Contact: Eero Tamminen <eero.tamminen@nokia.com>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License 
+ * version 2 as published by the Free Software Foundation. 
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  * ========================================================================= */
 
 /* ========================================================================= *

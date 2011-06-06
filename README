@@ -1,24 +1,30 @@
 Roundtrip mode
 ==============
 
-This pair of tools can now also be used to measure roundtrip latency/throughput in
-addition to the default mode by using '-r' switch with the dping. For example:
+This pair of tools can be used also to measure roundtrip
+latency/throughput in addition to the default mode (where
+there are no replies) by using '-r' switch with the dping.
+
+For example:
 
 dpong 1000 &
 dping -r 1000
 
-(if the amount of messages is not given, the default value of 100 will be used)
+(if the amount of messages is not given, the default value of 100
+will be used)
 
-Currently the roundtrip latency seems to be a bit more than 2x the single-way
-latency, with the reply taking more time than the original message. As an example,
- Fremantle, w46 RD release, RX-51 HW:
+Currently the roundtrip latency seems to be a bit more than 2x the
+single-way (no replies) latency, with the reply taking more time than
+the original message.
+
+As an example, Fremantle, w46 release (with syslog), on N900:
 
 single-way (fire-and-forget):
 
 Timestamp: 1400652543 microseconds
-MESSAGES recv 1000 lost 0 LATENCY min 113952 avg 191407 max 262817 THOUGHPUT 1296.6 m/s
+MESSAGES recv 1000 lost 0 LATENCY min 113952 avg 191407 max 262817 THROUGHPUT 1296.6 m/s
 Timestamp: 1401427446 microseconds
-MESSAGES recv 1000 lost 0 LATENCY min 116333 avg 186109 max 260620 THOUGHPUT 1290.7 m/s
+MESSAGES recv 1000 lost 0 LATENCY min 116333 avg 186109 max 260620 THROUGHPUT 1290.7 m/s
 
 Roundtrip mode:
 
@@ -26,25 +32,25 @@ Timestamp: 1476999864 microseconds
 Dping->dpong statistics: LATENCY min 143463 avg 181594 max 222106
 dping<-dpong statistics: LATENCY min 264466 avg 298409 max 326050
 Statistics for the whole roundtrip:
-MESSAGES recv 1000 lost 0 LATENCY min 407929 avg 480003 max 548156 THOUGHPUT 585.2 m/s
+MESSAGES recv 1000 lost 0 LATENCY min 407929 avg 480003 max 548156 THROUGHPUT 585.2 m/s
 
 Timestamp: 1478743455 microseconds
 Dping->dpong statistics: LATENCY min 148620 avg 181843 max 224335
 dping<-dpong statistics: LATENCY min 267578 avg 297071 max 328705
 Statistics for the whole roundtrip:
-MESSAGES recv 1000 lost 0 LATENCY min 416198 avg 478914 max 553040 THOUGHPUT 573.6 m/s
+MESSAGES recv 1000 lost 0 LATENCY min 416198 avg 478914 max 553040 THROUGHPUT 573.6 m/s
 
 
-Old(er) test results by Leonid:
-===============================
+Comments on old test results from Nokia 770:
+============================================
 
-I used the following test pattern (server and client):
+When using the following test pattern (server and client):
    run-standalone.sh ./dpong
    run-standalone.sh ./dping
 
-Here are build w40/F4 test results.
+The build w40 test results:
 
-Enough memory and idle system:
+When there's enough free memory and system is idle:
    MESSAGES recv 100 lost 0 LATENCY min 1525 avg 1564 max 2014
    MESSAGES recv 100 lost 0 LATENCY min 1525 avg 1555 max 1770
    MESSAGES recv 100 lost 0 LATENCY min 1525 avg 1562 max 1861
@@ -54,18 +60,22 @@ Enough memory and idle system:
    MESSAGES recv 100 lost 0 LATENCY min 1525 avg 1560 max 1862
    MESSAGES recv 100 lost 0 LATENCY min 1525 avg 1561 max 1831
    MESSAGES recv 100 lost 0 LATENCY min 1525 avg 1563 max 1800
-Thus we have 1.6 ms an average message latency and 1.8 ms for maximal
 
-Moment of Browser start
+= 1.6 ms average and 1.8 ms maximum message latency.
+
+When Browser is started:
    MESSAGES recv 100 lost 0 LATENCY min 1525 avg 2314 max 67018
    MESSAGES recv 100 lost 0 LATENCY min 1525 avg 8702 max 686065
    MESSAGES recv 100 lost 0 LATENCY min 1525 avg 6736 max 410125
    MESSAGES recv 100 lost 0 LATENCY min 1525 avg 13454 max 1151489
    MESSAGES recv 100 lost 0 LATENCY min 1586 avg 16958 max 668946
    MESSAGES recv 100 lost 0 LATENCY min 2564 avg 15920 max 257050
-Here are 16 ms an average message latency and up to 1151 ms for maximal
 
-Restarting dpong with reporting 1000 messages because 100 messages are too often.
+= 16 ms average and up to 1151 ms maximum message latency.
+
+Restarting dpong so that it reports at 1000 messages intervals because
+100 messages interval is too short:
+
    Nokia770-41:~# run-standalone.sh ./dpong 1000
    ping server
    reporting period is set to 1000 messages
@@ -80,7 +90,7 @@ Restarting dpong with reporting 1000 messages because 100 messages are too often
    MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1634 max 4272
    MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 2367 max 131012
 
-Now, high memory consumption, attempt to Browser switch:
+Now, with high memory consumption, attempting Browser switch:
    MESSAGES recv 1000 lost 0 LATENCY min 4608 avg 19670 max 478089
    MESSAGES recv 1000 lost 0 LATENCY min 2899 avg 19219 max 332123
    MESSAGES recv 1000 lost 0 LATENCY min 4548 avg 22953 max 728118
@@ -90,9 +100,10 @@ Now, high memory consumption, attempt to Browser switch:
    MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1690 max 3449
    MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1723 max 44373
    MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 7859 max 329132
-We have 8.7 ms an average latency and up to 72 ms maximal
 
-High memory usage, idle device
+= 8.7 ms average and up to 72 ms maximum message latency.
+
+High memory usage, idle device:
    MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 4959 max 146392
    MESSAGES recv 1000 lost 0 LATENCY min 1556 avg 3083 max 186768
    MESSAGES recv 1000 lost 0 LATENCY min 1556 avg 1633 max 3601
@@ -105,18 +116,21 @@ High memory usage, idle device
    MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1629 max 3570
    MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1635 max 3449
    MESSAGES recv 1000 lost 0 LATENCY min 1586 avg 1631 max 2990
-Average latency higher that usually but maximal is unpredicable up to 45 ms.
 
-After closing dpong server (just dping only) board is rebooted after about 1 minute.
+= Average latency higher than usual, but maximum is inconsistent
+  and taking up to 45 ms.
+
+After closing dpong server (just running dping), this (pre-)release
+gets rebooted in about 1 minute.
 
 
 
-Extra experiments with priorities:
+Experiments with priorities:
    Use case
    run-standalone.sh dpong &
    run-standalone.sh dping & ls -R / > /dev/null
 
-   original session server
+   original session server:
       MESSAGES recv 100 lost 0 LATENCY min 1556 avg 2491 max 79834
       MESSAGES recv 100 lost 0 LATENCY min 1556 avg 1656 max 6133
       MESSAGES recv 100 lost 0 LATENCY min 1556 avg 2462 max 79926
@@ -140,9 +154,11 @@ Extra experiments with priorities:
       MESSAGES recv 100 lost 0 LATENCY min 1556 avg 2573 max 52551
       MESSAGES recv 100 lost 0 LATENCY min 2350 avg 5217 max 266877
       MESSAGES recv 100 lost 0 LATENCY min 2349 avg 2674 max 7781
-   maximal registered latency is 712 ms -> problems in message routing & consumption
 
-   nice -10 dbus session server
+= Maximum registered latency is 712 ms
+  -> problems in message routing & consumption
+
+nice -10 dbus session server:
       MESSAGES recv 100 lost 0 LATENCY min 2197 avg 10088 max 757661
       MESSAGES recv 100 lost 0 LATENCY min 2227 avg 2463 max 6928
       MESSAGES recv 100 lost 0 LATENCY min 2228 avg 2433 max 6470
@@ -164,9 +180,11 @@ Extra experiments with priorities:
       MESSAGES recv 100 lost 0 LATENCY min 2227 avg 2574 max 6745
       MESSAGES recv 100 lost 0 LATENCY min 2228 avg 2678 max 6927
       MESSAGES recv 100 lost 0 LATENCY min 2228 avg 3117 max 12756
-   maximal registered latency is 758 ms -> problem in message consumption
 
-   nice -10 dbus session server + nice -10 for dpong
+= Maximum registered latency is 758 ms
+  -> problem in message consumption
+
+nice -10 dbus session server + nice -10 for dpong:
       MESSAGES recv 100 lost 0 LATENCY min 1191 avg 1332 max 1495
       MESSAGES recv 100 lost 0 LATENCY min 1191 avg 1335 max 1526
       MESSAGES recv 100 lost 0 LATENCY min 1252 avg 1378 max 4791
@@ -191,9 +209,11 @@ Extra experiments with priorities:
       MESSAGES recv 100 lost 0 LATENCY min 1220 avg 1364 max 4761
       MESSAGES recv 100 lost 0 LATENCY min 1190 avg 1347 max 2319
       MESSAGES recv 100 lost 0 LATENCY min 1252 avg 1337 max 1740
-   maximal registered latency is 80 ms -> situation looks much better!
 
-   Last experiment top report:
+= Maximum registered latency is 80 ms
+  -> situation looks much better!
+
+"top" report from last experiment:
       Mem: 60324K used, 1512K free, 0K shrd, 240K buff, 21684K cached
       Load average: 2.24, 1.48, 0.74    (State: S=sleeping R=running, W=waiting)
 
@@ -222,7 +242,7 @@ Extra experiments with priorities:
       624 root     S <     1412   268  0.0  2.2 btcond
       591 root     S <     1360   268  0.0  2.1 mce
 
-   Last experiment status report:
+Processes status after last experiment:
    Nokia770-41:~# cat /proc/761/status
       Name:   dbus-daemon-1
       State:  S (sleeping)

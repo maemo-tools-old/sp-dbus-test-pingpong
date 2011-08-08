@@ -1,0 +1,23 @@
+.TH DPING 1 "2011-08-08"
+.SH NAME
+dping \- client-server D-BUS latency and stress testing tool
+.SH SYNOPSIS
+\fBdping\fP \fI[-r]\fP \fI[<report_period>]\fP
+.SH DESCRIPTION
+\fIdping\fP floods the \fIdpong\fP server with DBus messages, and reports statistics.
+.SH ARGUMENTS
+.TP
+.I -r
+In this roundtrip mode, for each message the \fIdping\fP client sends to the
+\fIdpong\fP server, the client waits for a reply from the server.
+.TP
+.I report_period
+Allows to change the reporting period from the default of 1000 messages.
+.SH SEE ALSO
+.IR dpong (1)
+.SH COPYRIGHT
+Copyright (C) 2005-2011 Nokia Corporation.
+.PP
+This is free software. You may redistribute copies of it under the terms of the
+GNU General Public License v2 included with the software.  There is NO
+WARRANTY, to the extent permitted by law.

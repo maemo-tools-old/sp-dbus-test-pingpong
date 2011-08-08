@@ -1,3 +1,9 @@
+sp-dbus-test-pingpong (0.6) unstable; urgency=low
+
+  * Fixes: NB#226669 - sp-dbus-test-pingpong: not open-source
+
+ -- Tommi Rantala <ext-tommi.1.rantala@nokia.com>  Mon, 08 Aug 2011 11:44:51 +0300
+
 sp-dbus-test-pingpong (0.5) unstable; urgency=low
 
   * Attach to DBus Session Bus instead of System Bus.

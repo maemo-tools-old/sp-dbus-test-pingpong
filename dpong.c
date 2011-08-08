@@ -206,6 +206,15 @@ ping_object_unregistered_cb(DBusConnection* a_conn, void* a_user_data)
    fprintf (stderr, "DPONG: PingObject unregistered.\n");
 } /* ping_object_unregistered_cb */
 
+static void usage(void)
+{
+   fprintf(stderr,
+         "Usage: dpong [<report period>]\n"
+         "\n"
+         "Example:\n"
+         "   dpong &\n"
+         "   dping\n");
+}
 
 /* ========================================================================= *
  * Public methods: main
@@ -220,11 +229,30 @@ int main(int argc, const char* argv[])
    static const DBusObjectPathVTable vtable = {
       .unregister_function = ping_object_unregistered_cb,
       .message_function = ping_object_message_handler_cb
-   } ;
+   };
 
-   if (2 == argc)
+   if (argc > 2)
    {
-      s_report = (unsigned)atoi(argv[1]);
+      usage();
+      return 1;
+   }
+
+   if (argc == 2)
+   {
+      if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)
+      {
+         usage();
+         return 1;
+      }
+      else
+      {
+         s_report = (unsigned)atoi(argv[1]);
+         if (s_report <= 0) {
+            fprintf(stderr,
+                  "DPONG: ERROR: invalid reporting period. Quitting!\n");
+            return 1;
+         }
+      }
    }
 
    g_type_init();

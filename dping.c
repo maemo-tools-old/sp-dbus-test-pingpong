@@ -219,6 +219,16 @@ notify_func(DBusPendingCall *pending, void *data)
    dbus_message_unref(reply);
 }
 
+static void usage(void)
+{
+   fprintf(stderr,
+         "Usage: dping [-r] [<report period>]\n"
+         "\n"
+         "Example:\n"
+         "   dpong &\n"
+         "   dping\n");
+}
+
 /* ========================================================================= *
  * Public methods: main
  * ========================================================================= */
@@ -251,9 +261,17 @@ int main(int argc, char *argv[])
 
    /* Check if user wants to use the roundtrip mode */
 
-   if ( argc == 2 && !strcmp(argv[1], "-r") )
+   if ( argc == 2 )
    {
-      oneway = FALSE;
+      if ( strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0 )
+      {
+         usage();
+         return 1;
+      }
+      else if ( strcmp(argv[1], "-r") == 0 )
+      {
+         oneway = FALSE;
+      }
    }
    else if ( argc == 3 && !strcmp(argv[1], "-r") )
    {
@@ -263,6 +281,11 @@ int main(int argc, char *argv[])
         s_stats->report = report;
      }
      oneway = FALSE;
+   }
+   else if ( argc > 3 )
+   {
+      usage();
+      return 1;
    }
 
    if (oneway == FALSE)

@@ -22,5 +22,5 @@ install:
 	install dping $(DESTDIR)/usr/bin/
 	install dpong $(DESTDIR)/usr/bin/
 	mkdir -p $(DESTDIR)/usr/share/man/man1
-	install dping.1 $(DESTDIR)/usr/share/man/man1/
-	install dpong.1 $(DESTDIR)/usr/share/man/man1/
+	install -m 644 dping.1 $(DESTDIR)/usr/share/man/man1/
+	install -m 644 dpong.1 $(DESTDIR)/usr/share/man/man1/
